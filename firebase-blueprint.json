@@ -8,9 +8,10 @@
         "en": { "type": "object" },
         "bn": { "type": "object" },
         "heroImage": { "type": "string" },
+        "proprietorImage": { "type": "string" },
         "updatedAt": { "type": "string", "format": "date-time" }
       },
-      "required": ["en", "bn", "heroImage", "updatedAt"]
+      "required": ["en", "bn", "heroImage", "proprietorImage", "updatedAt"]
     },
     "Project": {
       "title": "Project",

@@ -54,6 +54,7 @@ const translations = {
       projects: 'Portfolio',
       about: 'Legacy',
       contact: 'Inquiry',
+      admin: 'Admin Panel',
     },
     projects: {
       title: 'Our Portfolio',
@@ -106,6 +107,7 @@ const translations = {
       projects: 'প্রকল্প',
       about: 'ঐতিহ্য',
       contact: 'অনুসন্ধান',
+      admin: 'অ্যাডমিন প্যানেল',
     },
     projects: {
       title: 'আমাদের প্রকল্পসমূহ',
@@ -230,7 +232,8 @@ export default function App() {
         // Seed if empty
         setDoc(doc(db, 'config', 'site'), {
           ...translations,
-          heroImage: "https://images.unsplash.com/photo-1541888946425-d81bb1930060?auto=format&fit=crop&q=80&w=3000"
+          heroImage: "https://images.unsplash.com/photo-1541888946425-d81bb1930060?auto=format&fit=crop&q=80&w=3000",
+          proprietorImage: "https://drive.google.com/uc?export=view&id=13vBXCBzRCLuEsJDSdgiBuaCtzIcg7FPM"
         });
       }
       setIsLoading(false);
@@ -266,11 +269,21 @@ export default function App() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
+
   const handleLogin = async () => {
+    setIsLoggingIn(true);
     try {
       await signInWithPopup(auth, googleProvider);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Login failed", error);
+      if (error.code === 'auth/popup-blocked') {
+        alert("Popup was blocked by your browser. Please allow popups for this site to log in.");
+      } else {
+        alert(`Login failed: ${error.message}`);
+      }
+    } finally {
+      setIsLoggingIn(false);
     }
   };
 
@@ -524,7 +537,7 @@ export default function App() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 lg:gap-10">
             <AnimatePresence mode="popLayout">
               {filteredProjects.map((project, idx) => (
                 <motion.div
@@ -619,7 +632,7 @@ export default function App() {
          <div className="section-padding grid lg:grid-cols-2 gap-32 items-center">
             <div className="relative group">
               <div className="aspect-[3/4] overflow-hidden rounded-[3rem] grayscale group-hover:grayscale-0 transition-all duration-1000 shadow-[0_0_80px_rgba(245,158,11,0.1)]">
-                 <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=1200" alt="Milad Ahmed" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000" referrerPolicy="no-referrer" />
+                 <img src={(siteTranslations as any).proprietorImage || "https://drive.google.com/uc?export=view&id=13vBXCBzRCLuEsJDSdgiBuaCtzIcg7FPM"} alt="Milad Ahmed" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000" referrerPolicy="no-referrer" />
               </div>
               <div className="absolute -bottom-10 -right-10 bg-amber-600 p-12 rounded-3xl shadow-2xl">
                  <div className="text-[10px] uppercase tracking-widest text-white/60 mb-2 font-black">{t.about.role}</div>
@@ -703,17 +716,29 @@ export default function App() {
                <span>ISO 9001:2015</span>
                <span>BS OHSAS 18001</span>
             </div>
-            <div className="flex items-center gap-8">
+            <div className="flex items-center gap-4 md:gap-8">
                {user ? (
-                 <button onClick={() => setShowAdmin(true)} className="flex items-center gap-2 text-amber-500 font-black cursor-pointer hover:text-amber-400">
-                    <Settings size={16} /> ADMIN
+                 <button onClick={() => setShowAdmin(true)} className="flex items-center gap-3 text-amber-500 font-black cursor-pointer hover:text-amber-400 group">
+                    <div className="p-2 border border-amber-500/30 rounded-lg group-hover:bg-amber-500 group-hover:text-white transition-all">
+                      <Settings size={18} />
+                    </div>
+                    <span className="hidden sm:inline uppercase tracking-widest text-[10px]">{t.nav.admin}</span>
                  </button>
                ) : (
-                 <button onClick={handleLogin} className="text-[10px] uppercase tracking-widest text-slate-700 hover:text-slate-500 font-black">
-                    STAFF LOGIN
+                 <button 
+                  onClick={handleLogin} 
+                  disabled={isLoggingIn}
+                  className={`flex items-center gap-3 text-[10px] uppercase tracking-widest font-black py-2 px-4 rounded-full border border-slate-200 hover:bg-slate-50 transition-all ${isLoggingIn ? 'opacity-50' : ''}`}
+                 >
+                    {isLoggingIn ? 'Wait...' : (
+                      <>
+                        <Globe size={14} className="text-amber-600" />
+                        STAFF LOGIN
+                      </>
+                    )}
                  </button>
                )}
-               <div className="text-[10px] uppercase tracking-widest text-slate-500">
+               <div className="hidden md:block text-[10px] uppercase tracking-widest text-slate-500">
                   © 2026 {t.footer.rights}
                </div>
             </div>
@@ -829,8 +854,9 @@ function AdminDashboard({ translations: initialData, projects, lang, onClose }: 
                    </div>
                 </div>
              </div>
-             <div className="bg-white/5 p-10 rounded-[3rem] border border-white/10 mb-12">
+             <div className="bg-white/5 p-10 rounded-[3rem] border border-white/10 mb-12 flex flex-col gap-8">
                 <AdminInput label="Global Hero Image URL" value={(editData as any).heroImage} onChange={(val) => setEditData({...editData, heroImage: val} as any)} />
+                <AdminInput label="Proprietor Profile Image URL" value={(editData as any).proprietorImage} onChange={(val) => setEditData({...editData, proprietorImage: val} as any)} />
              </div>
              <button onClick={saveContent} className="btn-primary w-full py-8 text-xl hover:bg-amber-500">
                 <Save size={24} /> PUSH UPDATES LIVE

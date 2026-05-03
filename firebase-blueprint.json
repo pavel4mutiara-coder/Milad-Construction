@@ -7,9 +7,10 @@
       "properties": {
         "en": { "type": "object" },
         "bn": { "type": "object" },
+        "heroImage": { "type": "string" },
         "updatedAt": { "type": "string", "format": "date-time" }
       },
-      "required": ["en", "bn", "updatedAt"]
+      "required": ["en", "bn", "heroImage", "updatedAt"]
     },
     "Project": {
       "title": "Project",

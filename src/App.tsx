@@ -49,11 +49,11 @@ import {
 const translations = {
   en: {
     nav: {
-      home: 'Home',
-      services: 'Services',
-      projects: 'Projects',
-      about: 'About',
-      contact: 'Contact',
+      home: 'Overview',
+      services: 'Expertise',
+      projects: 'Portfolio',
+      about: 'Legacy',
+      contact: 'Inquiry',
     },
     projects: {
       title: 'Our Portfolio',
@@ -101,11 +101,11 @@ const translations = {
   },
   bn: {
     nav: {
-      home: 'হোম',
-      services: 'সার্ভিস',
+      home: 'সারসংক্ষেপ',
+      services: 'দক্ষতা',
       projects: 'প্রকল্প',
-      about: 'সম্পর্কে',
-      contact: 'যোগাযোগ',
+      about: 'ঐতিহ্য',
+      contact: 'অনুসন্ধান',
     },
     projects: {
       title: 'আমাদের প্রকল্পসমূহ',
@@ -228,7 +228,10 @@ export default function App() {
         setSiteTranslations(snap.data() as any);
       } else {
         // Seed if empty
-        setDoc(doc(db, 'config', 'site'), translations);
+        setDoc(doc(db, 'config', 'site'), {
+          ...translations,
+          heroImage: "https://images.unsplash.com/photo-1541888946425-d81bb1930060?auto=format&fit=crop&q=80&w=3000"
+        });
       }
       setIsLoading(false);
     });
@@ -287,22 +290,22 @@ export default function App() {
   }
 
   return (
-    <div lang={lang} className={`font-sans selection:bg-amber-100 selection:text-amber-900 overflow-x-hidden w-full`}>
+    <div lang={lang} className={`font-sans selection:bg-amber-100 selection:text-amber-900 overflow-x-hidden w-full antialiased`}>
       {/* --- Sophisticated Navigation --- */}
-      <nav className={`fixed w-full z-100 transition-all duration-700 ${scrolled ? 'bg-white/95 backdrop-blur-xl shadow-2xl py-3' : 'bg-transparent py-6 lg:py-8'}`}>
-        <div className="max-w-[1400px] mx-auto px-4 md:px-8 flex justify-between items-center">
-          <div className="flex items-center gap-3 md:gap-4 group cursor-pointer">
-            <div className={`transition-all duration-500 p-2 md:p-2.5 ${scrolled ? 'bg-slate-900 rounded-lg' : 'bg-white/10 backdrop-blur-md rounded-full shadow-lg'}`}>
-              <Building2 size={22} className={scrolled ? 'text-amber-500' : 'text-white'} />
+      <nav className={`fixed w-full z-[100] transition-all duration-700 ${scrolled ? 'bg-white/95 backdrop-blur-xl shadow-2xl py-3' : 'bg-transparent py-5 lg:py-8'}`}>
+        <div className="max-w-[1440px] mx-auto px-6 md:px-12 flex justify-between items-center">
+          <div className="flex items-center gap-3 md:gap-5 group cursor-pointer">
+            <div className={`transition-all duration-700 p-2 md:p-3 ${scrolled ? 'bg-slate-900 rounded-xl' : 'bg-white/10 backdrop-blur-md rounded-full shadow-lg border border-white/10'}`}>
+              <Building2 size={24} className={scrolled ? 'text-amber-500' : 'text-white'} />
             </div>
             <div className="flex flex-col">
-              <h1 className={`text-sm md:text-xl font-black tracking-tighter uppercase transition-colors duration-500 line-height-none ${scrolled ? 'text-slate-900' : 'text-white'}`}>
+              <h1 className={`text-sm md:text-2xl font-black tracking-tighter uppercase transition-colors duration-500 leading-none ${scrolled ? 'text-slate-900' : 'text-white'}`}>
                 {lang === 'en' ? 'Milad Construction' : 'মিলাদ কান্সট্রাকশন'}
               </h1>
               <motion.p 
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                className={`text-[8px] md:text-[9px] uppercase tracking-[0.4em] font-bold transition-colors ${scrolled ? 'text-amber-600' : 'text-amber-400'}`}
+                className={`text-[8px] md:text-[10px] uppercase tracking-[0.4em] font-black transition-colors mt-1 ${scrolled ? 'text-amber-600' : 'text-amber-400/80'}`}
               >
                 {lang === 'en' ? 'Engineering Mastery' : 'নির্মাণে শ্রেষ্ঠত্ব'}
               </motion.p>
@@ -397,86 +400,87 @@ export default function App() {
         )}
       </AnimatePresence>
 
-      {/* --- Hero Section: Floating High-Contrast --- */}
+      {/* --- Hero Section --- */}
       <section className="relative min-h-screen flex items-center overflow-hidden bg-slate-950">
-        <div className="absolute inset-0 z-0 text-white/5 pointer-events-none flex items-center justify-center select-none overflow-hidden opacity-20 lg:opacity-100">
+        <div className="absolute inset-0 z-0 text-white/5 pointer-events-none flex items-center justify-center select-none overflow-hidden opacity-10 lg:opacity-30">
            <motion.span 
-             animate={{ x: [0, 50, 0], y: [0, -30, 0] }}
-             transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+             animate={{ x: [0, 100, 0], y: [0, -50, 0] }}
+             transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
              className="text-[40vw] font-black leading-none tracking-tighter mix-blend-overlay whitespace-nowrap"
            >
-             MILAD CONSTRUCTION
+             SYLHET DIVISION
            </motion.span>
         </div>
-        <div className="absolute inset-x-0 bottom-0 top-0 z-0">
+        <div className="absolute inset-0 z-0 overflow-hidden">
           <motion.img 
-            initial={{ scale: 1.2, opacity: 0 }}
-            animate={{ scale: 1, opacity: 0.4 }}
-            transition={{ duration: 2.5, ease: "circOut" }}
-            src="https://images.unsplash.com/photo-1541888946425-d81bb1930060?auto=format&fit=crop&q=80&w=3000" 
+            initial={{ scale: 1.3, opacity: 0 }}
+            animate={{ scale: 1, opacity: 0.5 }}
+            transition={{ duration: 3, ease: "circOut" }}
+            src={(siteTranslations as any).heroImage || "https://images.unsplash.com/photo-1541888946425-d81bb1930060?auto=format&fit=crop&q=80&w=3000"} 
             alt="Infrastructure" 
-            className="w-full h-full object-cover grayscale mix-blend-luminosity lg:mix-blend-normal"
+            className="w-full h-full object-cover grayscale mix-blend-luminosity lg:mix-blend-normal brightness-75 transition-all duration-700"
             referrerPolicy="no-referrer"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/70 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/80 to-transparent" />
         </div>
         
-        <div className="relative z-10 max-w-[1400px] mx-auto px-4 md:px-8 w-full pt-40 pb-20">
+        <div className="relative z-10 max-w-[1440px] mx-auto px-6 md:px-12 w-full pt-48 pb-24">
           <div className="max-w-5xl">
             <motion.div
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.5, type: "spring" }}
-              className="flex items-center gap-4 mb-10"
+              initial={{ opacity: 0, scale: 0.8, x: -30 }}
+              animate={{ opacity: 1, scale: 1, x: 0 }}
+              transition={{ delay: 0.5, type: "spring", damping: 15 }}
+              className="flex items-center gap-5 mb-12"
             >
-              <div className="flex -space-x-4">
-                 {[1,2,3].map(i => <div key={i} className="w-10 h-10 md:w-12 md:h-12 rounded-full border-4 border-slate-950 bg-amber-600 flex items-center justify-center text-xs font-black text-white hover:bg-slate-900 transition-colors shadow-xl">0{i}</div>)}
+              <div className="flex -space-x-3">
+                 {[1,2,3].map(i => <div key={i} className="w-10 h-10 md:w-14 md:h-14 rounded-full border-4 border-slate-950 bg-amber-600 flex items-center justify-center text-xs md:text-sm font-black text-white hover:bg-slate-900 transition-all duration-500 shadow-2xl cursor-default">0{i}</div>)}
               </div>
-              <span className="text-amber-500 text-[10px] md:text-[12px] uppercase tracking-[0.6em] font-black">
+              <div className="h-px w-12 bg-amber-500/50 hidden sm:block" />
+              <span className="text-amber-500 text-[10px] md:text-[13px] uppercase font-black tracking-[0.5em] drop-shadow-sm">
                 {lang === 'en' ? 'Contracting Specialist' : 'ঠিকাদারি স্পেশালিস্ট'}
               </span>
             </motion.div>
             
             <motion.h2 
-              initial={{ opacity: 0, y: 100 }}
+              initial={{ opacity: 0, y: 120 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
-              className="text-[clamp(2.5rem,11vw,14rem)] font-black text-white mb-10 leading-[0.75] tracking-tighter"
+              transition={{ duration: 1.4, ease: [0.16, 1, 0.3, 1] }}
+              className="text-[clamp(2.8rem,13vw,16rem)] font-black text-white mb-10 leading-[0.75] tracking-tighter"
             >
               {lang === 'en' ? (
                 <>WE BUILD<br/><span className="text-amber-500 animate-float inline-block">LEGENDS.</span></>
               ) : (
-                <>আস্থার<br/><span className="text-amber-500 animate-float inline-block pb-4">নির্মাণ।</span></>
+                <>আস্থার<br/><span className="text-amber-500 animate-float inline-block pb-6">নির্মাণ।</span></>
               )}
             </motion.h2>
 
             <motion.p 
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              transition={{ delay: 1, duration: 1 }}
-              className="text-lg md:text-4xl text-slate-300 mb-16 max-w-3xl font-light leading-[1.4] text-pretty"
+              transition={{ delay: 1.2, duration: 1.2 }}
+              className="text-lg md:text-5xl text-slate-300 mb-20 max-w-4xl font-light leading-[1.3] text-pretty border-l-8 border-amber-600 pl-10 ml-2"
             >
               {t.hero.subtitle}
             </motion.p>
 
             <motion.div 
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 1.2 }}
-              className="flex flex-col sm:flex-row gap-8 items-start sm:items-center"
+              transition={{ delay: 1.5 }}
+              className="flex flex-col sm:flex-row gap-10 items-start sm:items-center"
             >
-              <a href="#projects" className="btn-primary group h-20 px-12 md:px-16 text-lg hover:scale-105 active:scale-95 shadow-2xl shadow-amber-600/30">
+              <a href="#projects" className="btn-primary group h-24 px-16 md:px-20 text-xl hover:scale-105 active:scale-95 shadow-[0_20px_50px_rgba(245,158,11,0.3)]">
                 {t.hero.cta} 
-                <ArrowRight size={24} className="transition-transform group-hover:translate-x-3" />
+                <ArrowRight size={28} className="transition-transform duration-500 group-hover:translate-x-4" />
               </a>
-              <div className="flex items-center gap-10 text-white/20 font-black uppercase tracking-[0.3em] text-[10px]">
-                <div className="flex flex-col gap-2">
-                  <ShieldCheck size={28} className="text-amber-500/50" />
+              <div className="flex items-center gap-12 text-white/30 font-black uppercase tracking-[0.4em] text-[10px]">
+                <div className="flex flex-col gap-3 group/stat cursor-default">
+                  <ShieldCheck size={32} className="text-amber-500/60 group-hover/stat:text-amber-500 transition-colors" />
                   <span>ISO CERTIFIED</span>
                 </div>
-                <div className="h-10 w-px bg-white/10" />
-                <div className="flex flex-col gap-2">
-                  <HardHat size={28} className="text-amber-500/50" />
+                <div className="h-14 w-px bg-white/10" />
+                <div className="flex flex-col gap-3 group/stat cursor-default">
+                  <HardHat size={32} className="text-amber-500/60 group-hover/stat:text-amber-500 transition-colors" />
                   <span>HSE COMPLIANT</span>
                 </div>
               </div>
@@ -824,6 +828,9 @@ function AdminDashboard({ translations: initialData, projects, lang, onClose }: 
                       <AdminTextarea label="About Description" value={editData.bn.about.description1} onChange={(val) => setEditData({...editData, bn: {...editData.bn, about: {...editData.bn.about, description1: val}}})} />
                    </div>
                 </div>
+             </div>
+             <div className="bg-white/5 p-10 rounded-[3rem] border border-white/10 mb-12">
+                <AdminInput label="Global Hero Image URL" value={(editData as any).heroImage} onChange={(val) => setEditData({...editData, heroImage: val} as any)} />
              </div>
              <button onClick={saveContent} className="btn-primary w-full py-8 text-xl hover:bg-amber-500">
                 <Save size={24} /> PUSH UPDATES LIVE

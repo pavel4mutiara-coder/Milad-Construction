@@ -1,0 +1,39 @@
+{
+  "entities": {
+    "SiteContent": {
+      "title": "Site Content",
+      "description": "Dynamic text and translations for the website.",
+      "type": "object",
+      "properties": {
+        "en": { "type": "object" },
+        "bn": { "type": "object" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["en", "bn", "updatedAt"]
+    },
+    "Project": {
+      "title": "Project",
+      "description": "Construction project record.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "type": { "type": "string", "enum": ["roads", "bridges", "buildings"] },
+        "titleEn": { "type": "string" },
+        "titleBn": { "type": "string" },
+        "image": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["type", "titleEn", "titleBn", "image"]
+    }
+  },
+  "firestore": {
+    "config/site": {
+      "schema": "SiteContent",
+      "description": "Main site translations and configuration."
+    },
+    "projects/{projectId}": {
+      "schema": "Project",
+      "description": "List of construction projects."
+    }
+  }
+}

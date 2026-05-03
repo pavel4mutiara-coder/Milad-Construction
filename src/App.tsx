@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { useState, useEffect, type ReactNode } from 'react';
+import { useState, useEffect, type ReactNode, type ChangeEvent } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   Building2, 
@@ -27,11 +27,16 @@ import {
   Plus,
   Trash2,
   Save,
-  Image as ImageIcon
+  Image as ImageIcon,
+  Upload,
+  Loader2,
+  Check,
+  AlertCircle
 } from 'lucide-react';
 import { 
   auth, 
   db, 
+  storage, 
   googleProvider, 
   signInWithPopup, 
   signOut, 
@@ -42,7 +47,10 @@ import {
   addDoc, 
   deleteDoc, 
   updateDoc,
-  serverTimestamp 
+  serverTimestamp,
+  ref,
+  uploadBytes,
+  getDownloadURL
 } from './lib/firebase';
 
 // --- Translations Data ---
@@ -200,6 +208,20 @@ const projectsData = [
   }
 ];
 
+// --- Helper to handle image URLs (especially Google Drive) ---
+function getDirectLink(url: string) {
+  if (!url) return "";
+  if (!url.includes('drive.google.com')) return url;
+  
+  const idMatch = url.match(/\/d\/([a-zA-Z0-9_-]+)/) || url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+  if (idMatch && idMatch[1]) {
+    // Thumbnail endpoint is significantly more reliable for cross-origin display
+    return `https://drive.google.com/thumbnail?id=${idMatch[1]}&sz=w1600`;
+  }
+  return url;
+}
+
+// --- App Component ---
 export default function App() {
   const [lang, setLang] = useState<'en' | 'bn'>('bn');
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -232,8 +254,8 @@ export default function App() {
         // Seed if empty
         setDoc(doc(db, 'config', 'site'), {
           ...translations,
-          heroImage: "https://images.unsplash.com/photo-1541888946425-d81bb1930060?auto=format&fit=crop&q=80&w=3000",
-          proprietorImage: "https://drive.google.com/uc?export=view&id=13vBXCBzRCLuEsJDSdgiBuaCtzIcg7FPM"
+          heroImage: "https://images.unsplash.com/photo-1541888946425-d81bb1930060?auto=format&fit=crop&q=80&w=1600",
+          proprietorImage: "https://drive.google.com/file/d/13vBXCBzRCLuEsJDSdgiBuaCtzIcg7FPM/view?usp=sharing"
         });
       }
       setIsLoading(false);
@@ -429,10 +451,13 @@ export default function App() {
             initial={{ scale: 1.3, opacity: 0 }}
             animate={{ scale: 1, opacity: 0.5 }}
             transition={{ duration: 3, ease: "circOut" }}
-            src={(siteTranslations as any).heroImage || "https://images.unsplash.com/photo-1541888946425-d81bb1930060?auto=format&fit=crop&q=80&w=3000"} 
+            src={getDirectLink((siteTranslations as any).heroImage) || "https://images.unsplash.com/photo-1541888946425-d81bb1930060?auto=format&fit=crop&q=80&w=1600"} 
             alt="Infrastructure" 
             className="w-full h-full object-cover grayscale mix-blend-luminosity lg:mix-blend-normal brightness-75 transition-all duration-700"
             referrerPolicy="no-referrer"
+            onError={(e) => {
+               (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1541888946425-d81bb1930060?auto=format&fit=crop&q=80&w=1200';
+            }}
           />
           <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/80 to-transparent" />
         </div>
@@ -458,12 +483,12 @@ export default function App() {
               initial={{ opacity: 0, y: 120 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 1.4, ease: [0.16, 1, 0.3, 1] }}
-              className="text-[clamp(2.8rem,13vw,16rem)] font-black text-white mb-10 leading-[0.75] tracking-tighter"
+              className="text-[clamp(2.5rem,12vw,14rem)] font-black text-white mb-10 leading-[0.8] tracking-tighter"
             >
               {lang === 'en' ? (
                 <>WE BUILD<br/><span className="text-amber-500 animate-float inline-block">LEGENDS.</span></>
               ) : (
-                <>আস্থার<br/><span className="text-amber-500 animate-float inline-block pb-6">নির্মাণ।</span></>
+                <>আস্থার<br/><span className="text-amber-500 animate-float inline-block pb-4">নির্মাণ।</span></>
               )}
             </motion.h2>
 
@@ -632,7 +657,15 @@ export default function App() {
          <div className="section-padding grid lg:grid-cols-2 gap-32 items-center">
             <div className="relative group">
               <div className="aspect-[3/4] overflow-hidden rounded-[3rem] grayscale group-hover:grayscale-0 transition-all duration-1000 shadow-[0_0_80px_rgba(245,158,11,0.1)]">
-                 <img src={(siteTranslations as any).proprietorImage || "https://drive.google.com/uc?export=view&id=13vBXCBzRCLuEsJDSdgiBuaCtzIcg7FPM"} alt="Milad Ahmed" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000" referrerPolicy="no-referrer" />
+                 <img 
+                    src={getDirectLink((siteTranslations as any).proprietorImage) || "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=800"} 
+                    alt="Md. Milad Ahmed" 
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000" 
+                    referrerPolicy="no-referrer"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=800';
+                    }}
+                 />
               </div>
               <div className="absolute -bottom-10 -right-10 bg-amber-600 p-12 rounded-3xl shadow-2xl">
                  <div className="text-[10px] uppercase tracking-widest text-white/60 mb-2 font-black">{t.about.role}</div>
@@ -745,7 +778,6 @@ export default function App() {
          </div>
       </footer>
 
-      {/* --- Admin Modal --- */}
       <AnimatePresence>
         {showAdmin && user && (
           <AdminDashboard 
@@ -763,13 +795,18 @@ export default function App() {
 function AdminDashboard({ translations: initialData, projects, lang, onClose }: { translations: any, projects: any[], lang: 'en' | 'bn', onClose: () => void }) {
   const [activeTab, setActiveTab ] = useState<'content' | 'projects'>('content');
   const [editData, setEditData] = useState(initialData);
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'success' | 'error'>('idle');
 
   const saveContent = async () => {
+    setSaveStatus('saving');
     try {
       await setDoc(doc(db, 'config', 'site'), editData);
-      alert("Content Updated successfully!");
+      setSaveStatus('success');
+      setTimeout(() => setSaveStatus('idle'), 3000);
     } catch (e) {
-      alert("Error updating content");
+      console.error(e);
+      setSaveStatus('error');
+      setTimeout(() => setSaveStatus('idle'), 3000);
     }
   };
 
@@ -854,12 +891,42 @@ function AdminDashboard({ translations: initialData, projects, lang, onClose }: 
                    </div>
                 </div>
              </div>
-             <div className="bg-white/5 p-10 rounded-[3rem] border border-white/10 mb-12 flex flex-col gap-8">
-                <AdminInput label="Global Hero Image URL" value={(editData as any).heroImage} onChange={(val) => setEditData({...editData, heroImage: val} as any)} />
-                <AdminInput label="Proprietor Profile Image URL" value={(editData as any).proprietorImage} onChange={(val) => setEditData({...editData, proprietorImage: val} as any)} />
+             <div className="bg-white/5 p-10 rounded-[3rem] border border-white/10 mb-12 flex flex-col gap-12">
+                <div className="grid md:grid-cols-2 gap-8">
+                  <div className="space-y-4">
+                    <ImageUpload label="Global Hero Image" value={(editData as any).heroImage} onChange={(val) => setEditData({...editData, heroImage: val} as any)} />
+                  </div>
+                  <div className="space-y-4">
+                    <ImageUpload label="Proprietor Profile Image" value={(editData as any).proprietorImage} onChange={(val) => setEditData({...editData, proprietorImage: val} as any)} />
+                  </div>
+                </div>
              </div>
-             <button onClick={saveContent} className="btn-primary w-full py-8 text-xl hover:bg-amber-500">
-                <Save size={24} /> PUSH UPDATES LIVE
+             <button 
+                onClick={saveContent} 
+                disabled={saveStatus === 'saving'}
+                className={`btn-primary w-full py-8 text-xl transition-all flex items-center justify-center gap-4 ${
+                  saveStatus === 'success' ? 'bg-green-600 hover:bg-green-700' : 
+                  saveStatus === 'error' ? 'bg-red-600 hover:bg-red-700' : 
+                  'hover:bg-amber-500'
+                }`}
+             >
+                {saveStatus === 'saving' ? (
+                  <>
+                    <Loader2 className="animate-spin" size={24} /> SAVING CHANGES...
+                  </>
+                ) : saveStatus === 'success' ? (
+                  <>
+                    <Check size={24} /> UPDATED SUCCESSFULLY
+                  </>
+                ) : saveStatus === 'error' ? (
+                  <>
+                    <AlertCircle size={24} /> FAILED TO UPDATE
+                  </>
+                ) : (
+                  <>
+                    <Save size={24} /> PUSH UPDATES LIVE
+                  </>
+                )}
              </button>
           </div>
         )}
@@ -918,6 +985,75 @@ function AdminTextarea({ label, value, onChange }: { label: string, value: strin
          onChange={(e) => onChange(e.target.value)}
          className="bg-white/5 border border-white/10 rounded-2xl p-6 text-white h-40 focus:outline-none focus:ring-2 focus:ring-amber-500 transition-all" 
        />
+    </div>
+  );
+}
+
+function ImageUpload({ label, value, onChange, folder = 'images' }: { label: string, value: string, onChange: (v: string) => void, folder?: string }) {
+  const [uploading, setUploading] = useState(false);
+
+  const handleUpload = async (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 10 * 1024 * 1024) {
+      alert("File size exceeds 10MB limit.");
+      return;
+    }
+
+    setUploading(true);
+    try {
+      const storageRef = ref(storage, `${folder}/${Date.now()}-${file.name}`);
+      await uploadBytes(storageRef, file);
+      const url = await getDownloadURL(storageRef);
+      onChange(url);
+    } catch (error) {
+      alert("Upload failed. Please ensure Firebase Storage is enabled in your project.");
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  return (
+    <div className="flex flex-col gap-3">
+       <label className="text-[10px] uppercase tracking-widest font-black text-slate-500 font-mono">{label}</label>
+       <div className="relative group overflow-hidden rounded-2xl border border-white/10 bg-white/5 h-48">
+          {value ? (
+            <img 
+              key={value}
+              src={getDirectLink(value)} 
+              className="w-full h-full object-cover group-hover:scale-105 transition-transform" 
+              referrerPolicy="no-referrer"
+              onError={(e) => {
+                const fallback = 'https://images.unsplash.com/photo-1541888946425-d81bb1930060?auto=format&fit=crop&q=80&w=800';
+                if ((e.target as HTMLImageElement).src !== fallback) {
+                  (e.target as HTMLImageElement).src = fallback;
+                }
+              }}
+            />
+          ) : (
+            <div className="w-full h-full flex flex-col items-center justify-center text-slate-600">
+               <ImageIcon size={32} />
+               <span className="text-[9px] uppercase font-black mt-2">No Image Selected</span>
+            </div>
+          )}
+          <label className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-slate-950/60 opacity-0 group-hover:opacity-100 transition-all cursor-pointer">
+             {uploading ? (
+               <Loader2 className="animate-spin text-amber-500" size={32} />
+             ) : (
+               <>
+                 <Upload className="text-white mb-2" size={32} />
+                 <span className="text-[9px] uppercase font-black text-white">Click to Upload New</span>
+               </>
+             )}
+             <input type="file" className="hidden" onChange={handleUpload} accept="image/*" disabled={uploading} />
+          </label>
+       </div>
+       {value && (
+         <div className="text-[8px] text-slate-600 break-all font-mono">
+            {value}
+         </div>
+       )}
     </div>
   );
 }
